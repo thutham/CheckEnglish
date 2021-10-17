@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.*;
 
 
 public class main extends Answer{
@@ -32,6 +33,8 @@ public class main extends Answer{
             EN.add(obj.get("english").toString());
         }
         return EN;
+
+
     }
 
     //Print Question
@@ -44,37 +47,31 @@ public class main extends Answer{
         return answer1;
     }
     //Set Answer
-    public static List<Answer> setAnswer(JSONArray arr,JSONObject obj){
-        List<Answer> answerList = new ArrayList<Answer>();
+    public static ArrayList<String> setAnswer(JSONArray arr,JSONObject obj){
         printQuestion(obj);
-        answerList.add(getAnswer(obj));
-        ArrayList<String> answer = listENAnswer(arr);
-        answer.remove(getAnswer(obj).value);
+        ArrayList<String> answer = new ArrayList<>();
+        answer.add(getAnswer(obj).value);
         Random rand = new Random();
-        for ( int i =0 ; i< 2; i++){
-            for (int j =0; j< answer.size(); j++){
-            String nextAnswer = answer.get(j);
-            Answer answer2 = new Answer(i+2,  nextAnswer.toString());
-            answerList.add(answer2);
-            answer.remove(nextAnswer);}
+        while ( answer.size()<4){
+            int index = rand.nextInt(listENAnswer(arr).size());
+            String key = (String) listENAnswer(arr).get(index);
+            if(!answer.contains(key)){
+                answer.add(key);
+            }
         }
-        return answerList;
+        return answer;
     }
     // Random Result
-    public static List<Answer> randomAnswer(List<Answer> answerls){
-        ArrayList<String>answer = new ArrayList<>();
-        Random rand = new Random();
-        List<Answer> newAnswerList =  new ArrayList<Answer>();
-        for ( int i =0 ; i< answerls.size(); i++){
-           answer.add( answerls.get(i).value) ;
+    public static List<Answer> randomAnswer(ArrayList<String> arr){
+        Collections.shuffle(arr);
+        Answer answer1 = new Answer(1,arr.get(0).toString());
+        List<Answer> answerList =  new ArrayList<Answer>();
+        answerList.add(answer1);
+        for (int i=1; i< arr.size(); i++){
+            answer1 = new Answer(i+1,arr.get(i));
+            answerList.add(answer1);
         }
-
-        for ( int i =0 ; i< answerls.size(); i++){
-            int randoindex = rand.nextInt(answer.size());
-            answerls.get(i).setValue(answer.get(randoindex));
-            answer.remove(answer.get(randoindex));
-        }
-        return answerls;
+        return answerList;
     }
 
     // Print Random Result
@@ -103,15 +100,12 @@ public class main extends Answer{
                 obj = new JSONParser().parse(new FileReader("../Question/src/Question/data.json"));
                 JSONArray data = (JSONArray) obj;
                 JSONObject object = chooseQuestion(data);
-                List<Answer> answerList = randomAnswer(setAnswer(data,object));
-                randomAnswer(answerList);
+                ArrayList<String> answerArrayList = setAnswer(data,object);
 
-                printRandomAnswer(answerList);
+                printRandomAnswer(randomAnswer(answerArrayList));
                 System.out.println("Nhap cau tra loi: [1], [2], [3]");
                 int n = in.nextInt();
-                checkAnswer(n,data,answerList,object);
-
-
+                checkAnswer(n,data,randomAnswer(answerArrayList),object);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
